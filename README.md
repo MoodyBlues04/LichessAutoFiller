@@ -7,7 +7,8 @@
 4. Copy env example file ```cp .env.example .env``` and env variables
 
 ## Usage
-
++ Run ```python app/main.py -d=<current-date>``` to fill admin.itmo for specified date.
+  Students fio are loading from google sheet, linked by lichess nick from file.
 
 ## Plans
 + full automatisation: move lichess stats code here
