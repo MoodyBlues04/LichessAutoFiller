@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
+from selenium.webdriver.common.action_chains import ActionChains
 import time
 from os import getenv
 
@@ -63,15 +64,17 @@ class Parser(ABC):
         super().__init__()
         self._browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
-    @abstractmethod
-    def parse(self) -> ParsingResult:
-        pass
-
     def _get_web_element(self, by: str, identifier: str, delay: float = -1) -> WebElement:
         return WebElement(self._browser, by, identifier, delay)
 
     def _wait_for_element(self, by: str, identifier: str, delay: float = 10) -> None:
         WebDriverWait(self._browser, delay).until(EC.presence_of_element_located((by, identifier)))
+
+    def _move_and_click(self, el: SeleniumWebElement) -> None:
+        (ActionChains(self._browser)
+             .move_to_element(el)
+             .click(el)
+             .perform())
 
 
 class ItmoAdminParser(Parser):
@@ -90,7 +93,8 @@ class ItmoAdminParser(Parser):
         super().__init__()
         self.__week_day = week_day  # TODO by date (may be on another week)
 
-    def parse(self) -> ParsingResult:
+    # TODO by IU ID
+    def fill_visitings(self, fio_list: list) -> None:
         self.__login()
 
         time.sleep(2)
@@ -104,24 +108,17 @@ class ItmoAdminParser(Parser):
 
         visitings_container = self._get_web_element(By.XPATH, self.__VISITINGS_CONTAINER_XPATH, delay=10)
         student_items = visitings_container.element().find_elements(By.CLASS_NAME, 'b-overlay-wrap')
+
         print(len(student_items))
+
+        self._browser.implicitly_wait(10)
         for student_item in student_items:
-            time.sleep(1)
-            self._browser.implicitly_wait(10)
-            from selenium.webdriver.common.action_chains import ActionChains
-            label = student_item.find_element(By.TAG_NAME, 'label')
-            (ActionChains(self._browser) # need because firstly input not visible
-                 .move_to_element(label)
-                 .click(label)
-                 .perform())
-            break
-
-
-        # for student_item in students_items:
-        #     print(student_item.text)
-        #     student_item.find_elements(By.CLASS_NAME, 'custom-control-input')
-
-        return None
+            isu_id, fio = student_item.text.split('\n')
+            if fio in fio_list:
+                input_label = student_item.find_element(By.TAG_NAME, 'label')
+                self._move_and_click(input_label)
+                print(fio)
+                time.sleep(5)
 
     def __login(self) -> None:
         self._browser.get(self.__LOGIN_URL)

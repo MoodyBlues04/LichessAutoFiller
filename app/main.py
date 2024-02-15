@@ -1,8 +1,9 @@
 from dotenv import load_dotenv
 from argparse import ArgumentParser, ArgumentTypeError
 from datetime import datetime
-from os import  getenv
+from os import getenv
 from app.sheets import GoogleSheetsService
+from parsers import ItmoAdminParser
 
 load_dotenv()
 
@@ -23,8 +24,8 @@ if __name__ == '__main__':
         required=True,
         help="Specify day to fill in. format: YYYY-MM-DD"
     )
-    args = parser.parse_args()
 
+    args = parser.parse_args()
     week_day = args.date.weekday()
     if week_day == 6: raise Exception('Date cannot be Sunday')
 
@@ -34,12 +35,12 @@ if __name__ == '__main__':
         nicks = list(map(lambda nick: nick.rstrip(), nicks_file.readlines()))
     print(nicks)
 
-    # google_sheets_service = GoogleSheetsService(args.date)
-    # fios = google_sheets_service.get_fio(nicks)
+    google_sheets_service = GoogleSheetsService(args.date)
+    google_sheets_service.set_visitings(nicks)
+    fio_list = google_sheets_service.get_fio(nicks)
 
-    from parsers import ItmoAdminParser
     parser = ItmoAdminParser(week_day)
-    parser.parse()
+    parser.fill_visitings(fio_list)
 
 
 

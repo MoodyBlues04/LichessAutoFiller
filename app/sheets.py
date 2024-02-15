@@ -35,8 +35,11 @@ class GoogleSheetsApi:
 
     def add_to_col(self, col: int, data: list) -> None:
         first_empty_row_idx = self.get_first_empty_row(col)
+        self.set_col(col, data, start_row=first_empty_row_idx)
+
+    def set_col(self, col: int, data: list, start_row: int = 2) -> None:
         for idx, el in enumerate(data):
-            self.__worksheet.update_value((first_empty_row_idx + idx, col), el)
+            self.__worksheet.update_value((start_row + idx, col), el)
 
     def set_row(self, row: int, row_data: list) -> None:
         self.__worksheet.update_row(row, row_data)
@@ -47,6 +50,9 @@ class GoogleSheetsApi:
 
     def get_row(self, row: int, return_as: str = 'cell'):
         return self.__worksheet.get_row(row, return_as, include_tailing_empty=False)
+
+    def get_values(self, start: tuple, end: tuple) -> list:
+        return self.__worksheet.get_values(start, end)
 
     def get_first_empty_row(self, col: int = 1) -> int:
         col_data = self.get_col(col)
@@ -61,7 +67,6 @@ class GoogleSheetsApi:
     def find_in_row(self, target, row: int) -> int|None:
         """ Returns column of found value """
         for idx, el in enumerate(self.get_row(row)):
-            print(el)
             if el.value == target:
                 return idx + 1
         return None
@@ -71,6 +76,9 @@ class GoogleSheetsApi:
 
 
 class GoogleSheetsService:
+    __FIO_COL = 4
+    __LICHESS_NICK_COL = 7
+
     def __init__(self, date: datetime):
         self.__api = GoogleSheetsApi(getenv('SPREADSHEET_ID'))
         self.__date = date
@@ -80,22 +88,22 @@ class GoogleSheetsService:
         self.__api.set_worksheet(title)
         day_col = self.__api.find_in_row(self.__date.strftime('%d.%m'), row=1)
         self.__api.add_to_col(day_col, nicks)
-    #     TODO not work because of readonly permissions
 
     def get_fio(self, nicks: list[str]) -> list:
         title = self.__get_worksheet_title()
         self.__api.set_worksheet(title)
 
-        fios = []
-        for row_idx in range(3, 10_000):
-            fio, lichess = self.__api.get_cell(row_idx, 4), self.__api.get_cell(row_idx, 7)
-            if fio is None:
+        fio_list = []
+        last_row = self.__api.get_first_empty_row(col=self.__LICHESS_NICK_COL)
+        rows = self.__api.get_values((3, self.__FIO_COL), (last_row - 1, self.__LICHESS_NICK_COL))
+        for row_data in rows:
+            fio = row_data[0]
+            lichess_nick = row_data[-1]
+            if fio is None or len(fio) == 0:
                 break
-            if lichess in nicks:
-                fios.append(fio)
-                print(fio, lichess)
-
-
+            if lichess_nick in nicks:
+                fio_list.append(fio)
+        return fio_list
 
     def __get_worksheet_title(self, visiting_sheet: bool = False) -> str:
         day_to_title = {
