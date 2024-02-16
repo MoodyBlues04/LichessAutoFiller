@@ -36,7 +36,7 @@ if __name__ == '__main__':
     print(nicks)
 
     google_sheets_service = GoogleSheetsService(args.date)
-    google_sheets_service.set_visitings(nicks)
+    # google_sheets_service.set_visitings(nicks)
     fio_list = google_sheets_service.get_fio(nicks)
 
     parser = ItmoAdminParser(week_day)

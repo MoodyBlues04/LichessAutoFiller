@@ -76,6 +76,12 @@ class Parser(ABC):
              .click(el)
              .perform())
 
+    def _move_and_send(self, el: SeleniumWebElement, send_keys: str = Keys.ENTER) -> None:
+        (ActionChains(self._browser)
+             .move_to_element(el)
+             .send_keys(send_keys)
+             .perform())
+
 
 class ItmoAdminParser(Parser):
     __LOGIN_URL = 'https://admin.itmo.ru/login'
@@ -116,9 +122,12 @@ class ItmoAdminParser(Parser):
             isu_id, fio = student_item.text.split('\n')
             if fio in fio_list:
                 input_label = student_item.find_element(By.TAG_NAME, 'label')
+                """ don't know why, but need to move twice for 100% clicking """
                 self._move_and_click(input_label)
+                time.sleep(2)
+                self._move_and_send(input_label)
                 print(fio)
-                time.sleep(5)
+                time.sleep(2)
 
     def __login(self) -> None:
         self._browser.get(self.__LOGIN_URL)
