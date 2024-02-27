@@ -115,8 +115,6 @@ class ItmoAdminParser(Parser):
         visitings_container = self._get_web_element(By.XPATH, self.__VISITINGS_CONTAINER_XPATH, delay=10)
         student_items = visitings_container.element().find_elements(By.CLASS_NAME, 'b-overlay-wrap')
 
-        print(len(student_items))
-
         self._browser.implicitly_wait(10)
         for student_item in student_items:
             isu_id, fio = student_item.text.split('\n')
@@ -126,7 +124,7 @@ class ItmoAdminParser(Parser):
                 self._move_and_click(input_label)
                 time.sleep(2)
                 self._move_and_send(input_label)
-                print(fio)
+                print(fio_list.index(fio) + '.', fio)
                 time.sleep(2)
 
     def __login(self) -> None:
