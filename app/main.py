@@ -35,13 +35,13 @@ if __name__ == '__main__':
         nicks = list(map(lambda nick: nick.rstrip(), nicks_file.readlines()))
 
     google_sheets_service = GoogleSheetsService(args.date)
-    google_sheets_service.set_visitings(nicks)
+    # google_sheets_service.set_visitings(nicks)
     fio_list = google_sheets_service.get_fio(nicks)
     
-    print('Students on lesson:', len(fio_list))
+    print('Students on lesson:', len(nicks), len(fio_list))
 
-    parser = ItmoAdminParser(week_day)
-    parser.fill_visitings(fio_list)
+    # parser = ItmoAdminParser(week_day)
+    # parser.fill_visitings(fio_list)
 
 
 
