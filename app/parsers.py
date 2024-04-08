@@ -124,7 +124,7 @@ class ItmoAdminParser(Parser):
                 self._move_and_click(input_label)
                 time.sleep(2)
                 self._move_and_send(input_label)
-                print(fio_list.index(fio) + '.', fio)
+                print(str(fio_list.index(fio)) + '.', fio)
                 time.sleep(2)
 
     def __login(self) -> None:
