@@ -35,7 +35,7 @@ if __name__ == '__main__':
         nicks = list(map(lambda nick: nick.rstrip(), nicks_file.readlines()))
 
     google_sheets_service = GoogleSheetsService(args.date)
-    google_sheets_service.set_visitings(nicks)
+    # google_sheets_service.set_visitings(nicks)
     fio_list = google_sheets_service.get_fio(nicks)
     
     print(f'Students on lesson. zoom file: {len(nicks)}, parsed: {len(fio_list)}')

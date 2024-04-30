@@ -10,6 +10,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.remote.webelement import WebElement as SeleniumWebElement
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options
 import time
 from os import getenv
 
@@ -62,7 +63,16 @@ class Parser(ABC):
 
     def __init__(self) -> None:
         super().__init__()
-        self._browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+        options = Options()
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--ignore-ssl-errors')
+        options.add_argument('--allow-running-insecure-content')
+        options.add_argument('log-level=3')
+        self._browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     def _get_web_element(self, by: str, identifier: str, delay: float = -1) -> WebElement:
         return WebElement(self._browser, by, identifier, delay)
