@@ -15,7 +15,14 @@ def valid_date(s: str) -> datetime:
         raise ArgumentTypeError(f"not a valid date: {s!r}")
 
 
-if __name__ == '__main__':
+def valid_bool(s: str) -> bool:
+    try:
+        return bool(int(s))
+    except ValueError:
+        raise ArgumentTypeError(f"not a valid bool: {s!r} must be 0/1")
+
+
+def make_parser() -> ArgumentParser:
     parser = ArgumentParser()
     parser.add_argument(
         "-d",
@@ -24,6 +31,19 @@ if __name__ == '__main__':
         required=True,
         help="Specify day to fill in. format: YYYY-MM-DD"
     )
+    parser.add_argument(
+        "-u",
+        "--update_sheets",
+        type=valid_bool,
+        required=False,
+        default=True,
+        help="Fill excel sheets or not"
+    )
+    return parser
+
+
+if __name__ == '__main__':
+    parser = make_parser()
 
     args = parser.parse_args()
     week_day = args.date.weekday()
@@ -35,9 +55,11 @@ if __name__ == '__main__':
         nicks = list(map(lambda nick: nick.rstrip(), nicks_file.readlines()))
 
     google_sheets_service = GoogleSheetsService(args.date)
-    google_sheets_service.set_visitings(nicks)
+    if args.update_sheets:
+        google_sheets_service.set_visitings(nicks)
     fio_list = google_sheets_service.get_fio(nicks)
-    
+    exit();
+
     print(f'Students on lesson. zoom file: {len(nicks)}, parsed: {len(fio_list)}')
 
     parser = ItmoAdminParser(week_day)

@@ -97,7 +97,7 @@ class GoogleSheetsService:
         last_row = self.__api.get_first_empty_row(col=self.__LICHESS_NICK_COL)
         rows = self.__api.get_values((3, self.__FIO_COL), (last_row - 1, self.__LICHESS_NICK_COL))
         
-        g_nicks = [row_data[-1] for row_data in rows]
+        g_nicks = [row_data[-1].strip() for row_data in rows]
         for nick in nicks:
             if nick not in g_nicks:
                 print('Not found:', nick)
@@ -106,7 +106,7 @@ class GoogleSheetsService:
             fio = row_data[0]
             lichess_nick = row_data[-1]
             if fio is None or len(fio) == 0:
-                break
+                continue
             if lichess_nick in nicks:
                 fio_list.append(fio)
         return fio_list

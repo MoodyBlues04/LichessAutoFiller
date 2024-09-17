@@ -64,7 +64,7 @@ class Parser(ABC):
     def __init__(self) -> None:
         super().__init__()
         options = Options()
-        options.add_argument('--headless')
+        # options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument("--window-size=1920,1080")
@@ -72,7 +72,14 @@ class Parser(ABC):
         options.add_argument('--ignore-ssl-errors')
         options.add_argument('--allow-running-insecure-content')
         options.add_argument('log-level=3')
-        self._browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        self._browser = webdriver.Chrome(service=self.__make_service(), options=options)
+    
+    def __make_service(self) -> Service:
+        import os
+        chrome_install = ChromeDriverManager().install()
+        folder = os.path.dirname(chrome_install)
+        chromedriver_path = os.path.join(folder, "chromedriver.exe")
+        return Service(chromedriver_path)
 
     def _get_web_element(self, by: str, identifier: str, delay: float = -1) -> WebElement:
         return WebElement(self._browser, by, identifier, delay)
