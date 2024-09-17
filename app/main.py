@@ -58,12 +58,8 @@ if __name__ == '__main__':
     if args.update_sheets:
         google_sheets_service.set_visitings(nicks)
     fio_list = google_sheets_service.get_fio(nicks)
-    exit();
 
     print(f'Students on lesson. zoom file: {len(nicks)}, parsed: {len(fio_list)}')
 
     parser = ItmoAdminParser(week_day)
     parser.fill_visitings(fio_list)
-
-
-
