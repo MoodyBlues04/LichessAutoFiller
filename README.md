@@ -7,12 +7,22 @@
 4. Copy env example file ```cp .env.example .env``` and fill path to file with lichess nicks & path to credentials.json
 
 ## Usage
-+ Run ```python app/main.py -d=<current-date>``` to fill admin.itmo & google sheets for specified date.
-  Students fio are loading from google sheet, linked by lichess nick from file.
+```bash
+python app/main.py \
+  --date=<current-date> \
+  --tournament_id=<tournament id of lesson> \
+  --required_practice_time=<min lesson time (usually 45)> \
+  --lection_time=<lection time (usually 30 )> \
+  --update_sheets=<1 if should update google sheets> \
+  --fill_visitings=<1 if should update isu admin>
+```
+
+Students fio are loading from google sheet, linked by lichess nicks from lichess api.
 
 ## Plans
-+ full automatisation: move lichess stats code here
-+ link students by ISU id & fill google sheets with ISU ID
+- [x] full automatisation: move lichess stats code here
+- [ ] link students by ISU id & fill google sheets with ISU ID
+- [ ] refactor lesson participation logic + improve it
 
 ## Contributions
 Contributions to the code are always welcome,

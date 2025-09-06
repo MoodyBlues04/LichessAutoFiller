@@ -1,65 +1,42 @@
 from dotenv import load_dotenv
-from argparse import ArgumentParser, ArgumentTypeError
-from datetime import datetime
 from os import getenv
 from app.sheets import GoogleSheetsService
 from parsers import ItmoAdminParser
+from args_parser import make_arg_parser
+from lesson_participants_filter import *
+from logger import Logger
 
 load_dotenv()
 
 
-def valid_date(s: str) -> datetime:
-    try:
-        return datetime.strptime(s, "%Y-%m-%d")
-    except ValueError:
-        raise ArgumentTypeError(f"not a valid date: {s!r}")
-
-
-def valid_bool(s: str) -> bool:
-    try:
-        return bool(int(s))
-    except ValueError:
-        raise ArgumentTypeError(f"not a valid bool: {s!r} must be 0/1")
-
-
-def make_parser() -> ArgumentParser:
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-d",
-        "--date",
-        type=valid_date,
-        required=True,
-        help="Specify day to fill in. format: YYYY-MM-DD"
-    )
-    parser.add_argument(
-        "-u",
-        "--update_sheets",
-        type=valid_bool,
-        required=False,
-        default=True,
-        help="Fill excel sheets or not"
-    )
-    return parser
-
-
 if __name__ == '__main__':
-    parser = make_parser()
+    arg_parser = make_arg_parser()
 
-    args = parser.parse_args()
+    args = arg_parser.parse_args()
     week_day = args.date.weekday()
-    if week_day == 6: raise Exception('Date cannot be Sunday')
 
-    # TODO retrieve nicks from lichess API
-
-    with open(getenv('LICHESS_NICKS_PATH')) as nicks_file:
-        nicks = list(map(lambda nick: nick.rstrip(), nicks_file.readlines()))
+    with open(getenv('ZOOM_NICKS_PATH')) as nicks_file:
+        lection_participants = list(map(lambda nick: nick.rstrip(), nicks_file.readlines()))
+    
+    participation_collector = LessonParticipationCollector(
+        args.tournament_id,
+        args.required_practice_time,
+        args.lection_time,
+        lection_participants
+    )
+    participation_stats = participation_collector.collect_participants_stats()
+    
+    Logger().log_participaton_stats(participation_stats)
+    
+    visitings = map(lambda participant: participant.student_name, participation_stats.good_participants)
 
     google_sheets_service = GoogleSheetsService(args.date)
     if args.update_sheets:
-        google_sheets_service.set_visitings(nicks)
-    fio_list = google_sheets_service.get_fio(nicks)
+        google_sheets_service.set_visitings(visitings)
+    fio_list = google_sheets_service.get_fio(visitings)
 
-    print(f'Students on lesson. zoom file: {len(nicks)}, parsed: {len(fio_list)}')
+    print(f'Students on lesson. zoom file: {len(visitings)}, parsed: {len(fio_list)}')
 
-    parser = ItmoAdminParser(week_day)
-    parser.fill_visitings(fio_list)
+    if args.fill_visitings:
+        arg_parser = ItmoAdminParser(week_day)
+        arg_parser.fill_visitings(fio_list)
