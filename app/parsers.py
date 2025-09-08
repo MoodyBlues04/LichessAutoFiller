@@ -1,3 +1,4 @@
+from logger import Logger
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -112,9 +113,10 @@ class ItmoAdminParser(Parser):
 
     __VISITINGS_CONTAINER_XPATH = '//*[@id="sidebar-lesson"]/div/div/div[2]'
 
-    def __init__(self, week_day: int):
+    def __init__(self, logger: Logger, week_day: int):
         super().__init__()
-        self.__week_day = week_day  # TODO by date (may be on another week)
+        self.__logger = logger
+        self.__week_day = week_day
 
     # TODO by IU ID
     def fill_visitings(self, fio_list: list) -> None:
@@ -137,15 +139,25 @@ class ItmoAdminParser(Parser):
             isu_id, fio = student_item.text.split('\n')
             if fio in fio_list:
                 input_label = student_item.find_element(By.TAG_NAME, 'label')
-                """ don't know why, but need to move twice for 100% clicking """
-                self._move_and_click(input_label)
-                time.sleep(2)
-                self._move_and_send(input_label)
-                print(str(fio_list.index(fio)) + '.', fio)
-                time.sleep(2)
+                
+                res = 'Fail'
+                if self.__has_element_with_tag_name(student_item, 'svg'):
+                    res = 'Already filled'
+                else:
+                    self._move_and_click(input_label)
+                    time.sleep(0.5)
+                    self._move_and_send(input_label)
+                    time.sleep(3)
+                    if self.__has_element_with_tag_name(student_item, 'svg'):
+                        res = 'Success'
+                    
+                self.__logger.log("%d. isu='%s', name='%s', res='%s'" % (fio_list.index(fio), isu_id, fio, res))
 
     def __login(self) -> None:
         self._browser.get(self.__LOGIN_URL)
         self._get_web_element(By.ID, self.__LOGIN_INPUT_ID, delay=10).fill_input(getenv('ADMIN_ITMO_LOGIN'))
         self._get_web_element(By.ID, self.__PASSWORD_INPUT_ID).fill_input(getenv('ADMIN_ITMO_PASSWORD'))
         self._get_web_element(By.ID, self.__LOGIN_SUBMIT_ID).submit_button()
+
+    def __has_element_with_tag_name(self, el: WebElement, tag_name: str) -> bool:
+        return len(el.find_elements(By.TAG_NAME, tag_name)) > 0

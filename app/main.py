@@ -26,17 +26,16 @@ if __name__ == '__main__':
     )
     participation_stats = participation_collector.collect_participants_stats()
     
-    Logger().log_participaton_stats(participation_stats)
+    logger = Logger()
+    logger.log_participaton_stats(participation_stats)
     
-    visitings = map(lambda participant: participant.student_name, participation_stats.good_participants)
+    good_students_nicks = participation_stats.get_good_students_names()
 
-    google_sheets_service = GoogleSheetsService(args.date)
+    google_sheets_service = GoogleSheetsService(logger, args.date)
+    fio_list = google_sheets_service.get_fio(good_students_nicks)
     if args.update_sheets:
-        google_sheets_service.set_visitings(visitings)
-    fio_list = google_sheets_service.get_fio(visitings)
-
-    print(f'Students on lesson. zoom file: {len(visitings)}, parsed: {len(fio_list)}')
+        google_sheets_service.set_visitings(good_students_nicks)
 
     if args.fill_visitings:
-        arg_parser = ItmoAdminParser(week_day)
+        arg_parser = ItmoAdminParser(logger, week_day)
         arg_parser.fill_visitings(fio_list)

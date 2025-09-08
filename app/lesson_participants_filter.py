@@ -51,14 +51,18 @@ class ParticipantsStats:
     
     def sort_stats(self) -> None:
         self.bad_participants.sort(key=lambda participant: participant.time_played, reverse=True)
-        self.good_participants.sort()
+        self.good_participants.sort(key=lambda participant: participant.student_name)
     
     def total(self) -> int:
         return len(self.good_participants) + len(self.bad_participants)
+    
+    def get_good_students_names(self) -> list[str]:
+        return list(map(lambda participant: participant.student_name, self.good_participants))
 
 
 class LessonParticipationCollector:
     __MILLISECONDS_IN_MINUTE = 60_000
+    __MIN_GAMES_AFTER_ZOOM = 2
 
     def __init__(
         self,
@@ -83,7 +87,6 @@ class LessonParticipationCollector:
         
         games_played = stats_collector.count_games_played()
         time_played = stats_collector.count_time_played_in_msec()
-        time_played = self.__add_lection_participation_time(time_played)
         first_game_starts = stats_collector.get_first_game_start()
         last_game_end = stats_collector.get_last_game_end()
 
@@ -97,13 +100,20 @@ class LessonParticipationCollector:
                 games_played[student_name],
                 self.__is_worked_in_zoom(student_name)
             )
-            if participant.time_played < self.__required_practice_time * self.__MILLISECONDS_IN_MINUTE:
-                participants_stats.bad_participants.append(participant)
-            else:
+
+            if self.__is_good_participant(participant):
                 participants_stats.good_participants.append(participant)
+            else:
+                participants_stats.bad_participants.append(participant)
+        
+        participants_stats.sort_stats()
         
         return participants_stats
-       
+    
+    def __is_good_participant(self, participant: Participant) -> bool:
+        return participant.time_played >= self.__required_practice_time * self.__MILLISECONDS_IN_MINUTE or \
+                self.__is_worked_in_zoom(participant.student_name) and participant.games_played >= self.__MIN_GAMES_AFTER_ZOOM
+
     # todo retrieve http-client class 
     def __get_tournament_games(self) -> list:
         return requests.get(

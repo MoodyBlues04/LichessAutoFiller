@@ -10,10 +10,10 @@ class Logger:
     __BLOCK_DELIMETER = '=' * 20
 
     def log_participaton_stats(self, participation_stats: ParticipantsStats) -> None:
-        self.__print_info_block(f"\nPlayers played at least 1 game: {participation_stats.total()}")
+        self.log_info_block(f"\nPlayers played at least 1 game: {participation_stats.total()}")
 
         if len(participation_stats.bad_participants) > 0:
-            self.__print_info_block(f"Players played too few minutes: {len(participation_stats.bad_participants)}")
+            self.log_info_block(f"Players played too few minutes: {len(participation_stats.bad_participants)}")
             for participation in participation_stats.bad_participants:
                 print("%s minutes: %s; games: %d; minutes with pauses: %s %s" % (
                     participation.student_name.ljust(self.__MAXIMUM_NICK_LENGTH),
@@ -24,12 +24,15 @@ class Logger:
                 ))
             print()
 
-        self.__print_info_block(f"Players meet criteria: {len(participation_stats.good_participants)}")
+        self.log_info_block(f"Players meet criteria: {len(participation_stats.good_participants)}")
         for participation in participation_stats.good_participants:
             print(participation.student_name)
     
-    def __print_info_block(self, info: str) -> None:
-        print(f"{info}\n{self.__BLOCK_DELIMETER}\n")
+    def log_info_block(self, info: str = '') -> None:
+        self.log(f"\n{info}\n{self.__BLOCK_DELIMETER}\n")
+    
+    def log(self, text: str = '') -> None:
+        print(text)
 
     def __format_time(self, time) -> defaultdict:
             doubleTime = (1. * time) / self.__MILLISECONDS_IN_MINUTE

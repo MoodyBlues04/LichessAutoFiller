@@ -1,6 +1,7 @@
 from os import getenv
 import pygsheets
 from datetime import datetime
+from logger import Logger
 
 
 class GoogleSheetsApi:
@@ -79,9 +80,10 @@ class GoogleSheetsService:
     __FIO_COL = 4
     __LICHESS_NICK_COL = 7
 
-    def __init__(self, date: datetime):
+    def __init__(self, logger: Logger, date: datetime) -> None:
         self.__api = GoogleSheetsApi(getenv('SPREADSHEET_ID'))
         self.__date = date
+        self.__logger = logger
 
     def set_visitings(self, nicks: list[str]) -> None:
         title = self.__get_worksheet_title(visiting_sheet=True)
@@ -97,10 +99,6 @@ class GoogleSheetsService:
         last_row = self.__api.get_first_empty_row(col=self.__LICHESS_NICK_COL)
         rows = self.__api.get_values((3, self.__FIO_COL), (last_row - 1, self.__LICHESS_NICK_COL))
         
-        g_nicks = [row_data[-1].strip() for row_data in rows]
-        for nick in nicks:
-            if nick not in g_nicks:
-                print('Not found:', nick)
         
         for row_data in rows:
             fio = row_data[0]
@@ -109,6 +107,11 @@ class GoogleSheetsService:
                 continue
             if lichess_nick in nicks:
                 fio_list.append(fio)
+
+        self.__logger.log_info_block('Not found in gsheets students:')
+        self.__log_not_found_students(rows, nicks)
+        self.__logger.log_info_block(f'Parsed from gsheets students: {len(fio_list)} of {len(nicks)}')
+        
         return fio_list
 
     def __get_worksheet_title(self, visiting_sheet: bool = False) -> str:
@@ -121,3 +124,9 @@ class GoogleSheetsService:
             5: 'ср/сб',
         }
         return ('Посещения ' if visiting_sheet else '') + day_to_title[self.__date.weekday()]
+    
+    def __log_not_found_students(self, rows: list, nicks: list) -> None:
+        g_nicks = [row_data[-1].strip() for row_data in rows]
+        for nick in nicks:
+            if nick not in g_nicks:
+                self.__logger.log(f"Not found in gsheets: {nick}")
