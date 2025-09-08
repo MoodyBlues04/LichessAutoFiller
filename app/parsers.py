@@ -151,7 +151,7 @@ class ItmoAdminParser(Parser):
                     if self.__has_element_with_tag_name(student_item, 'svg'):
                         res = 'Success'
                     
-                self.__logger.log("%d. isu='%s', name='%s', res='%s'" % (fio_list.index(fio), isu_id, fio, res))
+                self.__logger.log("%d. isu='%s', name='%s', res='%s'" % (fio_list.index(fio)+1, isu_id, fio, res))
 
     def __login(self) -> None:
         self._browser.get(self.__LOGIN_URL)
