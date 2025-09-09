@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from os import getenv
-from app.sheets import GoogleSheetsService
+from sheets import GoogleSheetsService
 from parsers import ItmoAdminParser
 from args_parser import make_arg_parser
 from lesson_participants_filter import *
