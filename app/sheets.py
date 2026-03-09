@@ -77,8 +77,8 @@ class GoogleSheetsApi:
 
 
 class GoogleSheetsService:
-    __FIO_COL = 4
-    __LICHESS_NICK_COL = 7
+    __FIO_COL = 3
+    __LICHESS_NICK_COL = 6
 
     def __init__(self, logger: Logger, date: datetime) -> None:
         self.__api = GoogleSheetsApi(getenv('SPREADSHEET_ID'))

@@ -147,7 +147,7 @@ class ItmoAdminParser(Parser):
                     self._move_and_click(input_label)
                     time.sleep(0.5)
                     self._move_and_send(input_label)
-                    time.sleep(3)
+                    time.sleep(1.5)
                     if self.__has_element_with_tag_name(student_item, 'svg'):
                         res = 'Success'
                     

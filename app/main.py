@@ -32,10 +32,10 @@ if __name__ == '__main__':
     good_students_nicks = participation_stats.get_good_students_names()
 
     google_sheets_service = GoogleSheetsService(logger, args.date)
-    fio_list = google_sheets_service.get_fio(good_students_nicks)
     if args.update_sheets:
         google_sheets_service.set_visitings(good_students_nicks)
 
     if args.fill_visitings:
+        fio_list = google_sheets_service.get_fio(good_students_nicks)
         arg_parser = ItmoAdminParser(logger, week_day)
         arg_parser.fill_visitings(fio_list)
